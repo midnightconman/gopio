@@ -1,0 +1,57 @@
+// Copyright 2017, Midnightconman Inc.
+// All rights reserved.
+
+
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.midnightconman.gopio";
+option java_outer_classname = "GoPIO";
+
+package gopio;
+
+service GoPIO {
+
+  // Is the Pin input or output?
+  rpc GetPinDirection(Pin) returns (PinDirection) {}
+
+  // Is the Pin High or Low
+  rpc GetPinState(Pin) returns (PinState) {}
+
+  // Is the Pin Off, Down or Up
+  rpc GetPinPull(Pin) returns (PinPull) {}
+
+
+  // Set the Pin input or output?
+  rpc SetPinDirection(Pin) returns (PinDirection) {}
+
+  // Is the Pin High or Low
+  rpc SetPinState(Pin) returns (PinState) {}
+
+  // Is the Pin Off, Down or Up
+  rpc SetPinPull(Pin) returns (PinPull) {}
+
+}
+
+message PinDirection {
+  enum Direction {
+    Input = 0
+    Output = 1
+  }
+}
+
+message PinState {
+  enum State {
+    Low = 0
+    High = 1
+  }
+}
+
+message PinPull {
+  enum Pull {
+    PullOff = 0
+    PullDown = 1
+    PullUp = 2
+  }
+}
+
