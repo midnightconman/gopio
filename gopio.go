@@ -1,61 +1,61 @@
-
+// Raspberry pi GPIO grpc wrapper
 
 package main
 
 import (
-    "flag"
-    "fmt"
-    "github.com/stianeikeland/go-rpio"
-    "net"
-    "google.golang.org/grpc"
-    pb "github.com/midnightconman/gopio/proto"
-)
-
-var (
-    tls        = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
-    certFile   = flag.String("cert_file", "testdata/server1.pem", "The TLS cert file")
-    keyFile    = flag.String("key_file", "testdata/server1.key", "The TLS key file")
-    port       = flag.Int("port", 8443, "The server port")
+	"fmt"
+	pb "github.com/midnightconman/gopio/pb"
+	//"github.com/stianeikeland/go-rpio"
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"net"
+	"os"
+	"strconv"
 )
 
 type server struct{}
 
-const (
-    Input Direction = iota
-    Output
-)
+func (s *server) GetPinDirection(ctx context.Context, pin *pb.Pin) (*pb.PinDirection, error) {
+	//return &pb.PinDirection{number: 1}, nil
+	return nil, nil
+}
 
-const (
-    Low State = iota
-    High
-)
+func (s *server) GetPinState(ctx context.Context, pin *pb.Pin) (*pb.PinState, error) {
+	return nil, nil
+}
 
-const (
-    PullOff Pull = iota
-    PullDown
-    PullUp
-)
+func (s *server) GetPinPull(ctx context.Context, pin *pb.Pin) (*pb.PinPull, error) {
+	return nil, nil
+}
 
-func newServer() *gopioServer {
-    s := new(gopioServer)
-    return s
+func (s *server) SetPinDirection(ctx context.Context, pin *pb.Pin) (*pb.PinDirection, error) {
+	return nil, nil
+}
+
+func (s *server) SetPinState(ctx context.Context, pin *pb.Pin) (*pb.PinState, error) {
+	return nil, nil
+}
+
+func (s *server) SetPinPull(ctx context.Context, pin *pb.Pin) (*pb.PinPull, error) {
+	return nil, nil
 }
 
 func main() {
-    flag.Parse()
-    lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
-    if err != nil {
-        grpclog.Fatalf("failed to listen: %v", err)
-    }
-    var opts []grpc.ServerOption
-    if *tls {
-        creds, err := credentials.NewServerTLSFromFile(*certFile, *keyFile)
-        if err != nil {
-            grpclog.Fatalf("Failed to generate credentials %v", err)
-        }
-        opts = []grpc.ServerOption{grpc.Creds(creds)}
-    }
-    grpcServer := grpc.NewServer(opts...)
-    //pb.RegisterRouteGuideServer(grpcServer, newServer())
-    grpcServer.Serve(lis)
+	port, err := strconv.ParseInt(os.Getenv("GOPIO_PORT"), 10, 64)
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to listen: %v\n", err)
+	}
+	var opts []grpc.ServerOption
+	if os.Getenv("GOPIO_TLS") != "" {
+		creds, err := credentials.NewServerTLSFromFile(os.Getenv("GOPIO_CERT"), os.Getenv("GOPIO_KEY"))
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "failed to generate credentials %v\n", err)
+		}
+		opts = []grpc.ServerOption{grpc.Creds(creds)}
+	}
+	grpcServer := grpc.NewServer(opts...)
+	pb.RegisterGoPIOServer(grpcServer, &server{})
+	grpcServer.Serve(lis)
 }

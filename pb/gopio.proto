@@ -33,25 +33,29 @@ service GoPIO {
 
 }
 
+message Pin {
+  int32 number = 1;
+}
+
 message PinDirection {
   enum Direction {
-    Input = 0
-    Output = 1
+    Input = 0;
+    Output = 1;
   }
 }
 
 message PinState {
   enum State {
-    Low = 0
-    High = 1
+    Low = 0;
+    High = 1;
   }
 }
 
 message PinPull {
   enum Pull {
-    PullOff = 0
-    PullDown = 1
-    PullUp = 2
+    PullOff = 0;
+    PullDown = 1;
+    PullUp = 2;
   }
 }
 
