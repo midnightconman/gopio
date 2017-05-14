@@ -38,24 +38,14 @@ message Pin {
 }
 
 message PinDirection {
-  enum Direction {
-    Input = 0;
-    Output = 1;
-  }
+  int32 Direction = 1;
 }
 
 message PinState {
-  enum State {
-    Low = 0;
-    High = 1;
-  }
+  int32 State = 1;
 }
 
 message PinPull {
-  enum Pull {
-    PullOff = 0;
-    PullDown = 1;
-    PullUp = 2;
-  }
+  int32 Pull = 1;
 }
 
