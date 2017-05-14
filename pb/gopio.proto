@@ -34,18 +34,18 @@ service GoPIO {
 }
 
 message Pin {
-  int32 Number = 1;
+  int32 number = 1;
 }
 
 message PinDirection {
-  int32 Direction = 1;
+  int32 direction = 1;
 }
 
 message PinState {
-  int32 State = 1;
+  int32 state = 1;
 }
 
 message PinPull {
-  int32 Pull = 1;
+  int32 pull = 1;
 }
 
