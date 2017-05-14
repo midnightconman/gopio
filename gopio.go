@@ -5,24 +5,39 @@ package main
 import (
 	"fmt"
 	pb "github.com/midnightconman/gopio/pb"
-	//"github.com/stianeikeland/go-rpio"
+	"github.com/stianeikeland/go-rpio"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"net"
 	"os"
-	"strconv"
 )
 
 type server struct{}
 
 func (s *server) GetPinDirection(ctx context.Context, pin *pb.Pin) (*pb.PinDirection, error) {
-	//return &pb.PinDirection{number: 1}, nil
+	/*p := rpio.Pin(pin.Number)
+	if err := rpio.Open(); err != nil {
+		return &pb.PinDirection{Direction: Input}, err
+	}
+
+	defer rpio.Close()
+
+	// This isn't supported by rpio lib yet
+	return &pb.PinDirection{Direction: Input}, nil
+	*/
 	return nil, nil
 }
 
 func (s *server) GetPinState(ctx context.Context, pin *pb.Pin) (*pb.PinState, error) {
-	return nil, nil
+	p := rpio.Pin(pin.Number)
+	if err := rpio.Open(); err != nil {
+		return nil, err
+	}
+
+	defer rpio.Close()
+
+	return &pb.PinState{State: rpio.Read()}, nil
 }
 
 func (s *server) GetPinPull(ctx context.Context, pin *pb.Pin) (*pb.PinPull, error) {
@@ -42,8 +57,7 @@ func (s *server) SetPinPull(ctx context.Context, pin *pb.Pin) (*pb.PinPull, erro
 }
 
 func main() {
-	port, err := strconv.ParseInt(os.Getenv("GOPIO_PORT"), 10, 64)
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%s", os.Getenv("GOPIO_HOST"), os.Getenv("GOPIO_PORT")))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to listen: %v\n", err)
 	}
