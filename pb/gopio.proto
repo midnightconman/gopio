@@ -35,6 +35,9 @@ service GoPIO {
 
 message Pin {
   int32 number = 1;
+  int32 direction = 2;
+  int32 state = 3;
+  int32 pull = 4;
 }
 
 message PinDirection {
