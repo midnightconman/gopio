@@ -37,7 +37,7 @@ func (s *server) GetPinState(ctx context.Context, pin *pb.Pin) (*pb.PinState, er
 
 	defer rpio.Close()
 
-	return &pb.PinState{State: rpio.Read()}, nil
+	return &pb.PinState{State: int32(p.Read())}, nil
 }
 
 func (s *server) GetPinPull(ctx context.Context, pin *pb.Pin) (*pb.PinPull, error) {
