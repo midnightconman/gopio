@@ -9,6 +9,7 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/reflection"
 	"net"
 	"os"
 )
@@ -41,19 +42,65 @@ func (s *server) GetPinState(ctx context.Context, pin *pb.Pin) (*pb.PinState, er
 }
 
 func (s *server) GetPinPull(ctx context.Context, pin *pb.Pin) (*pb.PinPull, error) {
+	/*p := rpio.Pin(pin.Number)
+	if err := rpio.Open(); err != nil {
+		return &pb.PinPull{Pull: p.GetPull()}, err
+	}
+
+	defer rpio.Close()
+
+	// This isn't supported by rpio lib yet
+	return &pb.PinPull{Pull: int32(p.GetPinPull())}, nil
+	*/
 	return nil, nil
 }
 
 func (s *server) SetPinDirection(ctx context.Context, pin *pb.Pin) (*pb.PinDirection, error) {
-	return nil, nil
+	p := rpio.Pin(pin.Number)
+	if err := rpio.Open(); err != nil {
+		return nil, err
+	}
+
+	defer rpio.Close()
+	p.Mode(rpio.Direction(uint8(pin.Direction)))
+
+	return &pb.PinDirection{Direction: pin.Direction}, nil
 }
 
 func (s *server) SetPinState(ctx context.Context, pin *pb.Pin) (*pb.PinState, error) {
-	return nil, nil
+	p := rpio.Pin(pin.Number)
+	if err := rpio.Open(); err != nil {
+		return nil, err
+	}
+
+	defer rpio.Close()
+	p.Write(rpio.State(uint8(pin.State)))
+
+	return &pb.PinState{State: int32(p.Read())}, nil
 }
 
 func (s *server) SetPinPull(ctx context.Context, pin *pb.Pin) (*pb.PinPull, error) {
-	return nil, nil
+	p := rpio.Pin(pin.Number)
+	if err := rpio.Open(); err != nil {
+		return nil, err
+	}
+
+	defer rpio.Close()
+	p.Write(rpio.State(uint8(pin.State)))
+
+	return &pb.PinPull{Pull: pin.Pull}, nil
+}
+
+func (s *server) TogglePinState(ctx context.Context, pin *pb.Pin) (*pb.PinPull, error) {
+	p := rpio.Pin(pin.Number)
+	if err := rpio.Open(); err != nil {
+		return nil, err
+	}
+
+	defer rpio.Close()
+	p.Toggle(rpio.State(uint8(pin.State)))
+
+	return &pb.PinState{State: int32(p.Read())}, nil
 }
 
 func main() {
@@ -71,5 +118,6 @@ func main() {
 	}
 	grpcServer := grpc.NewServer(opts...)
 	pb.RegisterGoPIOServer(grpcServer, &server{})
+	reflection.Register(grpcServer)
 	grpcServer.Serve(lis)
 }

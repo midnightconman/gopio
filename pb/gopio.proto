@@ -25,12 +25,14 @@ service GoPIO {
   // Set the Pin input or output?
   rpc SetPinDirection(Pin) returns (PinDirection) {}
 
-  // Is the Pin High or Low
+  // Set the Pin High or Low
   rpc SetPinState(Pin) returns (PinState) {}
 
-  // Is the Pin Off, Down or Up
+  // Set the Pin Off, Down or Up
   rpc SetPinPull(Pin) returns (PinPull) {}
 
+  // Toggle the Pin between High and Low
+  rpc TogglePinState(Pin) returns (PinState) {}
 }
 
 message Pin {
