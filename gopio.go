@@ -91,14 +91,14 @@ func (s *server) SetPinPull(ctx context.Context, pin *pb.Pin) (*pb.PinPull, erro
 	return &pb.PinPull{Pull: pin.Pull}, nil
 }
 
-func (s *server) TogglePinState(ctx context.Context, pin *pb.Pin) (*pb.PinPull, error) {
+func (s *server) TogglePinState(ctx context.Context, pin *pb.Pin) (*pb.PinState, error) {
 	p := rpio.Pin(pin.Number)
 	if err := rpio.Open(); err != nil {
 		return nil, err
 	}
 
 	defer rpio.Close()
-	p.Toggle(rpio.State(uint8(pin.State)))
+	p.Toggle()
 
 	return &pb.PinState{State: int32(p.Read())}, nil
 }
