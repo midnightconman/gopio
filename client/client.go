@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"os"
+	"time"
 )
 
 type Direction uint8
@@ -62,7 +63,7 @@ func (i Pull) String() string {
 func main() {
 	server := fmt.Sprintf("%s:%s", os.Getenv("GOPIO_HOST"), os.Getenv("GOPIO_PORT"))
 
-	p := pb.Pin{Number: 14}
+	p := pb.Pin{Number: 14, Direction: int32(Output), State: int32(Low)}
 
 	var opts []grpc.DialOption
 	if os.Getenv("GOPIO_TLS") != "" {
@@ -84,10 +85,32 @@ func main() {
 
 	client := pb.NewGoPIOClient(conn)
 
-	p14, err := client.GetPinState(context.Background(), &p)
+	pd, err := client.SetPinDirection(context.Background(), &p)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed SetPinDirection for pin(%d): %v\n", &p.Number, err)
+	}
+	fmt.Fprintf(os.Stdout, "Pin:(%d) Direction:(%s)\n", p.Number, Direction(uint8(pd.Direction)))
+
+	ps, err := client.GetPinState(context.Background(), &p)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed GetPinState for pin(%d): %v\n", &p.Number, err)
 	}
-	fmt.Fprintf(os.Stdout, "Pin:(%d) State:(%s)\n", p.Number, State(uint8(p14.State)))
+	fmt.Fprintf(os.Stdout, "Pin:(%d) State:(%s)\n", p.Number, State(uint8(ps.State)))
+
+	ps, err = client.SetPinState(context.Background(), &p)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed SetPinState for pin(%d): %v\n", &p.Number, err)
+	}
+	fmt.Fprintf(os.Stdout, "Pin:(%d) State:(%s)\n", p.Number, State(uint8(ps.State)))
+
+	time.Sleep(10 * time.Second)
+
+	p = pb.Pin{Number: 14, State: int32(High)}
+
+	ps, err = client.SetPinState(context.Background(), &pb.Pin{Number: 14, State: int32(High)})
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed SetPinState for pin(%d): %v\n", &p.Number, err)
+	}
+	fmt.Fprintf(os.Stdout, "Pin:(%d) State:(%s)\n", p.Number, State(uint8(ps.State)))
 
 }
