@@ -12,6 +12,8 @@ import (
 	"google.golang.org/grpc/reflection"
 	"net"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 type server struct{}
@@ -104,6 +106,21 @@ func (s *server) TogglePinState(ctx context.Context, pin *pb.Pin) (*pb.PinState,
 }
 
 func main() {
+	sigs := make(chan os.Signal, 1)
+
+	signal.Notify(sigs, syscall.SIGUSR1, syscall.SIGUSR2, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		for {
+			sig := <-sigs
+			fmt.Fprintf(os.Stdout, "Signal Received: %v\n", sig)
+			switch sig {
+			case syscall.SIGINT, syscall.SIGTERM:
+				os.Exit(0)
+			}
+		}
+	}()
+
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%s", os.Getenv("GOPIO_HOST"), os.Getenv("GOPIO_PORT")))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to listen: %v\n", err)
