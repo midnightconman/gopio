@@ -60,10 +60,23 @@ func (i Pull) String() string {
 	return _Pull_name[_Pull_index[i]:_Pull_index[i+1]]
 }
 
+func PinSet(client pb.GoPIOClient, pin *pb.Pin) (*pb.Pin, error) {
+
+	d, err := client.SetPinDirection(context.Background(), pin)
+	if err != nil {
+		return &pb.Pin{Number: 14}, fmt.Errorf("Failed SetPinDirection for pin(%d): %v\n", pin.Number, err)
+	}
+
+	s, err := client.SetPinState(context.Background(), pin)
+	if err != nil {
+		return &pb.Pin{Number: 14}, fmt.Errorf("Failed SetPinState for pin(%d): %v\n", pin.Number, err)
+	}
+        
+	return &pb.Pin{Number: pin.Number, Direction: int32(d.Direction), State: int32(s.State)}, nil
+}
+
 func main() {
 	server := fmt.Sprintf("%s:%s", os.Getenv("GOPIO_HOST"), os.Getenv("GOPIO_PORT"))
-
-	p := pb.Pin{Number: 14, Direction: int32(Output), State: int32(Low)}
 
 	var opts []grpc.DialOption
 	if os.Getenv("GOPIO_TLS") != "" {
@@ -71,7 +84,6 @@ func main() {
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "failed to generate credentials %v\n", err)
 		}
-		//opts = []grpc.ServerOption{grpc.Creds(creds)}
 		opts = append(opts, grpc.WithTransportCredentials(creds))
 	} else {
 		opts = append(opts, grpc.WithInsecure())
@@ -85,32 +97,21 @@ func main() {
 
 	client := pb.NewGoPIOClient(conn)
 
-	pd, err := client.SetPinDirection(context.Background(), &p)
+	p := pb.Pin{Number: 14, Direction: int32(Output), State: int32(Low)}
+	ps, err := PinSet(client, &p)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed SetPinDirection for pin(%d): %v\n", &p.Number, err)
+		fmt.Fprintf(os.Stderr, "Failed PinOn for pin(%d): %v\n", &p.Number, err)
 	}
-	fmt.Fprintf(os.Stdout, "Pin:(%d) Direction:(%s)\n", p.Number, Direction(uint8(pd.Direction)))
-
-	ps, err := client.GetPinState(context.Background(), &p)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed GetPinState for pin(%d): %v\n", &p.Number, err)
-	}
-	fmt.Fprintf(os.Stdout, "Pin:(%d) State:(%s)\n", p.Number, State(uint8(ps.State)))
-
-	ps, err = client.SetPinState(context.Background(), &p)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed SetPinState for pin(%d): %v\n", &p.Number, err)
-	}
-	fmt.Fprintf(os.Stdout, "Pin:(%d) State:(%s)\n", p.Number, State(uint8(ps.State)))
+	fmt.Fprintf(os.Stdout, "Pin:(%d) Direction:(%s) ", p.Number, Direction(uint8(ps.Direction)))
+	fmt.Fprintf(os.Stdout, "State:(%s)\n", State(uint8(ps.State)))
 
 	time.Sleep(10 * time.Second)
 
-	p = pb.Pin{Number: 14, State: int32(High)}
-
-	ps, err = client.SetPinState(context.Background(), &pb.Pin{Number: 14, State: int32(High)})
+	p = pb.Pin{Number: 14, Direction: int32(Output), State: int32(High)}
+	ps, err = PinSet(client, &p)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed SetPinState for pin(%d): %v\n", &p.Number, err)
+		fmt.Fprintf(os.Stderr, "Failed PinOn for pin(%d): %v\n", &p.Number, err)
 	}
-	fmt.Fprintf(os.Stdout, "Pin:(%d) State:(%s)\n", p.Number, State(uint8(ps.State)))
+	fmt.Fprintf(os.Stdout, "Pin:(%d) Direction:(%s) State:(%s)\n", p.Number, Direction(uint8(ps.Direction)), State(uint8(ps.State)))
 
 }
