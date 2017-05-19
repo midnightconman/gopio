@@ -6,6 +6,8 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"io"
+	"log"
 	"os"
 	"time"
 )
@@ -60,6 +62,24 @@ func (i Pull) String() string {
 	return _Pull_name[_Pull_index[i]:_Pull_index[i+1]]
 }
 
+var (
+	Info  *log.Logger
+	Error *log.Logger
+)
+
+func LogInit(
+	infoHandle io.Writer,
+	errorHandle io.Writer) {
+
+	Info = log.New(infoHandle,
+		"INFO: ",
+		log.Ldate|log.Ltime|log.Lshortfile)
+
+	Error = log.New(errorHandle,
+		"ERROR: ",
+		log.Ldate|log.Ltime|log.Lshortfile)
+}
+
 func PinSet(client pb.GoPIOClient, pin *pb.Pin) (*pb.Pin, error) {
 
 	d, err := client.SetPinDirection(context.Background(), pin)
@@ -71,18 +91,19 @@ func PinSet(client pb.GoPIOClient, pin *pb.Pin) (*pb.Pin, error) {
 	if err != nil {
 		return &pb.Pin{Number: 14}, fmt.Errorf("Failed SetPinState for pin(%d): %v\n", pin.Number, err)
 	}
-        
+
 	return &pb.Pin{Number: pin.Number, Direction: int32(d.Direction), State: int32(s.State)}, nil
 }
 
 func main() {
+	LogInit(os.Stdout, os.Stderr)
 	server := fmt.Sprintf("%s:%s", os.Getenv("GOPIO_HOST"), os.Getenv("GOPIO_PORT"))
 
 	var opts []grpc.DialOption
 	if os.Getenv("GOPIO_TLS") != "" {
 		creds, err := credentials.NewServerTLSFromFile(os.Getenv("GOPIO_CERT"), os.Getenv("GOPIO_KEY"))
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "failed to generate credentials %v\n", err)
+			Error.Printf("failed to generate credentials %v\n", err)
 		}
 		opts = append(opts, grpc.WithTransportCredentials(creds))
 	} else {
@@ -91,7 +112,7 @@ func main() {
 
 	conn, err := grpc.Dial(server, opts...)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "fail to dial: %v", err)
+		Error.Printf("fail to dial: %v", err)
 	}
 	defer conn.Close()
 
@@ -100,18 +121,17 @@ func main() {
 	p := pb.Pin{Number: 14, Direction: int32(Output), State: int32(Low)}
 	ps, err := PinSet(client, &p)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed PinOn for pin(%d): %v\n", &p.Number, err)
+		Error.Printf("Failed PinOn for pin(%d): %v\n", &p.Number, err)
 	}
-	fmt.Fprintf(os.Stdout, "Pin:(%d) Direction:(%s) ", p.Number, Direction(uint8(ps.Direction)))
-	fmt.Fprintf(os.Stdout, "State:(%s)\n", State(uint8(ps.State)))
+	Info.Printf("Pin:(%d) Direction:(%s) State:(%s)\n", p.Number, Direction(uint8(ps.Direction)), State(uint8(ps.State)))
 
 	time.Sleep(10 * time.Second)
 
 	p = pb.Pin{Number: 14, Direction: int32(Output), State: int32(High)}
 	ps, err = PinSet(client, &p)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed PinOn for pin(%d): %v\n", &p.Number, err)
+		Error.Printf("Failed PinOn for pin(%d): %v\n", &p.Number, err)
 	}
-	fmt.Fprintf(os.Stdout, "Pin:(%d) Direction:(%s) State:(%s)\n", p.Number, Direction(uint8(ps.Direction)), State(uint8(ps.State)))
+	Info.Printf("Pin:(%d) Direction:(%s) State:(%s)\n", p.Number, Direction(uint8(ps.Direction)), State(uint8(ps.State)))
 
 }
