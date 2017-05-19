@@ -10,11 +10,31 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
+	"io"
+	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
 )
+
+var (
+	Info  *log.Logger
+	Error *log.Logger
+)
+
+func LogInit(
+	infoHandle io.Writer,
+	errorHandle io.Writer) {
+
+	Info = log.New(infoHandle,
+		"INFO: ",
+		log.Ldate|log.Ltime|log.Lshortfile)
+
+	Error = log.New(errorHandle,
+		"ERROR: ",
+		log.Ldate|log.Ltime|log.Lshortfile)
+}
 
 type server struct{}
 
@@ -25,6 +45,8 @@ func (s *server) GetPinDirection(ctx context.Context, pin *pb.Pin) (*pb.PinDirec
 	}
 
 	defer rpio.Close()
+
+	Info.Printf("GetPinDirection context(%s) pin(%v)\n", ctx, pin)
 
 	// This isn't supported by rpio lib yet
 	return &pb.PinDirection{Direction: Input}, nil
@@ -40,6 +62,8 @@ func (s *server) GetPinState(ctx context.Context, pin *pb.Pin) (*pb.PinState, er
 
 	defer rpio.Close()
 
+	Info.Printf("GetPinState context(%s) pin(%v)\n", ctx, pin)
+
 	return &pb.PinState{State: int32(p.Read())}, nil
 }
 
@@ -50,6 +74,8 @@ func (s *server) GetPinPull(ctx context.Context, pin *pb.Pin) (*pb.PinPull, erro
 	}
 
 	defer rpio.Close()
+
+	Info.Printf("GetPinPull context(%s) pin(%v)\n", ctx, pin)
 
 	// This isn't supported by rpio lib yet
 	return &pb.PinPull{Pull: int32(p.GetPinPull())}, nil
@@ -66,6 +92,8 @@ func (s *server) SetPinDirection(ctx context.Context, pin *pb.Pin) (*pb.PinDirec
 	defer rpio.Close()
 	p.Mode(rpio.Direction(uint8(pin.Direction)))
 
+	Info.Printf("SetPinDirection context(%v) pin(%v)\n", ctx, pin)
+
 	return &pb.PinDirection{Direction: pin.Direction}, nil
 }
 
@@ -77,6 +105,8 @@ func (s *server) SetPinState(ctx context.Context, pin *pb.Pin) (*pb.PinState, er
 
 	defer rpio.Close()
 	p.Write(rpio.State(uint8(pin.State)))
+
+	Info.Printf("SetPinState context(%s) pin(%v)\n", ctx, pin)
 
 	return &pb.PinState{State: int32(p.Read())}, nil
 }
@@ -90,6 +120,8 @@ func (s *server) SetPinPull(ctx context.Context, pin *pb.Pin) (*pb.PinPull, erro
 	defer rpio.Close()
 	p.Write(rpio.State(uint8(pin.State)))
 
+	Info.Printf("SetPinPull context(%s) pin(%v)\n", ctx, pin)
+
 	return &pb.PinPull{Pull: pin.Pull}, nil
 }
 
@@ -102,10 +134,13 @@ func (s *server) TogglePinState(ctx context.Context, pin *pb.Pin) (*pb.PinState,
 	defer rpio.Close()
 	p.Toggle()
 
+	Info.Printf("TogglePinState context(%s) pin(%v)\n", ctx, pin)
+
 	return &pb.PinState{State: int32(p.Read())}, nil
 }
 
 func main() {
+	LogInit(os.Stdout, os.Stderr)
 	sigs := make(chan os.Signal, 1)
 
 	signal.Notify(sigs, syscall.SIGUSR1, syscall.SIGUSR2, syscall.SIGINT, syscall.SIGTERM)
@@ -113,7 +148,7 @@ func main() {
 	go func() {
 		for {
 			sig := <-sigs
-			fmt.Fprintf(os.Stdout, "Signal Received: %v\n", sig)
+			Info.Printf("Signal Received: %v\n", sig)
 			switch sig {
 			case syscall.SIGINT, syscall.SIGTERM:
 				os.Exit(0)
@@ -123,13 +158,13 @@ func main() {
 
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%s", os.Getenv("GOPIO_HOST"), os.Getenv("GOPIO_PORT")))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to listen: %v\n", err)
+		Error.Printf("failed to listen: %v\n", err)
 	}
 	var opts []grpc.ServerOption
 	if os.Getenv("GOPIO_TLS") != "" {
 		creds, err := credentials.NewServerTLSFromFile(os.Getenv("GOPIO_CERT"), os.Getenv("GOPIO_KEY"))
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "failed to generate credentials %v\n", err)
+			Error.Printf("failed to generate credentials %v\n", err)
 		}
 		opts = []grpc.ServerOption{grpc.Creds(creds)}
 	}
