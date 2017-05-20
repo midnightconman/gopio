@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	pb "github.com/midnightconman/gopio/pb"
+	"github.com/midnightconman/gopio/schema"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -11,56 +12,6 @@ import (
 	"os"
 	"time"
 )
-
-type Direction uint8
-type State uint8
-type Pull uint8
-
-const (
-	Input Direction = iota
-	Output
-)
-const _Direction_name = "InputOutput"
-
-var _Direction_index = [...]uint8{0, 5, 11}
-
-func (i Direction) String() string {
-	if i >= Direction(len(_Direction_index)-1) {
-		return fmt.Sprintf("Direction(%d)", i)
-	}
-	return _Direction_name[_Direction_index[i]:_Direction_index[i+1]]
-}
-
-const (
-	Low State = iota
-	High
-)
-const _State_name = "LowHigh"
-
-var _State_index = [...]uint8{0, 3, 7}
-
-func (i State) String() string {
-	if i >= State(len(_State_index)-1) {
-		return fmt.Sprintf("State(%d)", i)
-	}
-	return _State_name[_State_index[i]:_State_index[i+1]]
-}
-
-const (
-	PullOff Pull = iota
-	PullDown
-	PullUp
-)
-const _Pull_name = "PullOffPullDownPullUp"
-
-var _Pull_index = [...]uint8{0, 7, 15, 21}
-
-func (i Pull) String() string {
-	if i >= Pull(len(_Pull_index)-1) {
-		return fmt.Sprintf("Pull(%d)", i)
-	}
-	return _Pull_name[_Pull_index[i]:_Pull_index[i+1]]
-}
 
 var (
 	Info  *log.Logger
@@ -118,24 +69,24 @@ func main() {
 
 	client := pb.NewGoPIOClient(conn)
 
-	for i := 2; i <= 27; i++ {
-		/*
-		p := pb.Pin{Number: 14, Direction: int32(Output), State: int32(Low)}
-		ps, err := PinSet(client, &p)
-		if err != nil {
-		    Error.Printf("Failed PinOn for pin(%d): %v\n", &p.Number, err)
-		}
-		Info.Printf("Pin:(%d) Direction:(%s) State:(%s)\n", p.Number, Direction(uint8(ps.Direction)), State(uint8(ps.State)))
-		*/
+	//for i := 2; i <= 27; i++ {
 
-		time.Sleep(1 * time.Second)
-
-		p := pb.Pin{Number: int32(i), Direction: int32(Output), State: int32(High)}
-		ps, err := PinSet(client, &p)
-		if err != nil {
-			Error.Printf("Failed PinOn for pin(%d): %v\n", &p.Number, err)
-		}
-		Info.Printf("Pin:(%d) Direction:(%s) State:(%s)\n", p.Number, Direction(uint8(ps.Direction)), State(uint8(ps.State)))
+	p := pb.Pin{Number: 14, Direction: int32(schema.Output), State: int32(schema.Low)}
+	ps, err := PinSet(client, &p)
+	if err != nil {
+		Error.Printf("Failed PinOn for pin(%d): %v\n", &p.Number, err)
 	}
+	Info.Printf("Pin:(%d) Direction:(%s) State:(%s)\n", p.Number, schema.Direction(uint8(ps.Direction)), schema.State(uint8(ps.State)))
+
+	time.Sleep(1 * time.Second)
+
+	//p = pb.Pin{Number: int32(i), Direction: int32(schema.Output), State: int32(schema.High)}
+	p = pb.Pin{Number: 14, Direction: int32(schema.Output), State: int32(schema.High)}
+	ps, err = PinSet(client, &p)
+	if err != nil {
+		Error.Printf("Failed PinOn for pin(%d): %v\n", &p.Number, err)
+	}
+	Info.Printf("Pin:(%d) Direction:(%s) State:(%s)\n", p.Number, schema.Direction(uint8(ps.Direction)), schema.State(uint8(ps.State)))
+	//}
 
 }
