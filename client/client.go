@@ -118,20 +118,24 @@ func main() {
 
 	client := pb.NewGoPIOClient(conn)
 
-	p := pb.Pin{Number: 14, Direction: int32(Output), State: int32(Low)}
-	ps, err := PinSet(client, &p)
-	if err != nil {
-		Error.Printf("Failed PinOn for pin(%d): %v\n", &p.Number, err)
-	}
-	Info.Printf("Pin:(%d) Direction:(%s) State:(%s)\n", p.Number, Direction(uint8(ps.Direction)), State(uint8(ps.State)))
+	for i := 2; i <= 27; i++ {
+		/*
+		p := pb.Pin{Number: 14, Direction: int32(Output), State: int32(Low)}
+		ps, err := PinSet(client, &p)
+		if err != nil {
+		    Error.Printf("Failed PinOn for pin(%d): %v\n", &p.Number, err)
+		}
+		Info.Printf("Pin:(%d) Direction:(%s) State:(%s)\n", p.Number, Direction(uint8(ps.Direction)), State(uint8(ps.State)))
+		*/
 
-	time.Sleep(10 * time.Second)
+		time.Sleep(1 * time.Second)
 
-	p = pb.Pin{Number: 14, Direction: int32(Output), State: int32(High)}
-	ps, err = PinSet(client, &p)
-	if err != nil {
-		Error.Printf("Failed PinOn for pin(%d): %v\n", &p.Number, err)
+		p := pb.Pin{Number: int32(i), Direction: int32(Output), State: int32(High)}
+		ps, err := PinSet(client, &p)
+		if err != nil {
+			Error.Printf("Failed PinOn for pin(%d): %v\n", &p.Number, err)
+		}
+		Info.Printf("Pin:(%d) Direction:(%s) State:(%s)\n", p.Number, Direction(uint8(ps.Direction)), State(uint8(ps.State)))
 	}
-	Info.Printf("Pin:(%d) Direction:(%s) State:(%s)\n", p.Number, Direction(uint8(ps.Direction)), State(uint8(ps.State)))
 
 }
