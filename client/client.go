@@ -1,34 +1,38 @@
-package main
+package client
 
 import (
 	"fmt"
 	pb "github.com/midnightconman/gopio/pb"
-	"github.com/midnightconman/gopio/schema"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"io"
-	"log"
-	"os"
-	"time"
 )
 
-var (
-	Info  *log.Logger
-	Error *log.Logger
-)
+func NewClient(server string) (*grpc.ClientConn, error) {
 
-func LogInit(
-	infoHandle io.Writer,
-	errorHandle io.Writer) {
+	var opts []grpc.DialOption
 
-	Info = log.New(infoHandle,
-		"INFO: ",
-		log.Ldate|log.Ltime|log.Lshortfile)
+	conn, err := grpc.Dial(server, grpc.WithInsecure())
+	if err != nil {
+		return nil, fmt.Errorf("fail to dial: %v", err)
+	}
 
-	Error = log.New(errorHandle,
-		"ERROR: ",
-		log.Ldate|log.Ltime|log.Lshortfile)
+	return conn, nil
+}
+
+func NewTLSClient(server string, cert string, key string) (*grpc.ClientConn, error) {
+
+	creds, err := credentials.NewServerTLSFromFile(cert, key)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate credentials %v\n", err)
+	}
+
+	conn, err := grpc.Dial(server, grpc.WithTransportCredentials(creds))
+	if err != nil {
+		return nil, fmt.Errorf("fail to dial: %v", err)
+	}
+
+	return conn, nil
 }
 
 func PinSet(client pb.GoPIOClient, pin *pb.Pin) (*pb.Pin, error) {
@@ -46,47 +50,3 @@ func PinSet(client pb.GoPIOClient, pin *pb.Pin) (*pb.Pin, error) {
 	return &pb.Pin{Number: pin.Number, Direction: int32(d.Direction), State: int32(s.State)}, nil
 }
 
-func main() {
-	LogInit(os.Stdout, os.Stderr)
-	server := fmt.Sprintf("%s:%s", os.Getenv("GOPIO_HOST"), os.Getenv("GOPIO_PORT"))
-
-	var opts []grpc.DialOption
-	if os.Getenv("GOPIO_TLS") != "" {
-		creds, err := credentials.NewServerTLSFromFile(os.Getenv("GOPIO_CERT"), os.Getenv("GOPIO_KEY"))
-		if err != nil {
-			Error.Printf("failed to generate credentials %v\n", err)
-		}
-		opts = append(opts, grpc.WithTransportCredentials(creds))
-	} else {
-		opts = append(opts, grpc.WithInsecure())
-	}
-
-	conn, err := grpc.Dial(server, opts...)
-	if err != nil {
-		Error.Printf("fail to dial: %v", err)
-	}
-	defer conn.Close()
-
-	client := pb.NewGoPIOClient(conn)
-
-	//for i := 2; i <= 27; i++ {
-
-	p := pb.Pin{Number: 14, Direction: int32(schema.Output), State: int32(schema.Low)}
-	ps, err := PinSet(client, &p)
-	if err != nil {
-		Error.Printf("Failed PinOn for pin(%d): %v\n", &p.Number, err)
-	}
-	Info.Printf("Pin:(%d) Direction:(%s) State:(%s)\n", p.Number, schema.Direction(uint8(ps.Direction)), schema.State(uint8(ps.State)))
-
-	time.Sleep(1 * time.Second)
-
-	//p = pb.Pin{Number: int32(i), Direction: int32(schema.Output), State: int32(schema.High)}
-	p = pb.Pin{Number: 14, Direction: int32(schema.Output), State: int32(schema.High)}
-	ps, err = PinSet(client, &p)
-	if err != nil {
-		Error.Printf("Failed PinOn for pin(%d): %v\n", &p.Number, err)
-	}
-	Info.Printf("Pin:(%d) Direction:(%s) State:(%s)\n", p.Number, schema.Direction(uint8(ps.Direction)), schema.State(uint8(ps.State)))
-	//}
-
-}
