@@ -5,6 +5,7 @@ package main
 import (
 	"fmt"
 	pb "github.com/midnightconman/gopio/pb"
+	"github.com/midnightconman/gopio/schema"
 	"github.com/stianeikeland/go-rpio"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -62,7 +63,7 @@ func (s *server) GetPinState(ctx context.Context, pin *pb.Pin) (*pb.PinState, er
 
 	defer rpio.Close()
 
-	Info.Printf("GetPinState context(%s) pin(%v)\n", ctx, pin)
+	Info.Printf("TogglePinState context(%s) pin{Number: %d, Direction: %s, State: %s, Pull: %s}\n", ctx, pin.Number, schema.Direction(int32(pin.Direction)), schema.State(int32(pin.State)), schema.Pull(int32(pin.Pull)))
 
 	return &pb.PinState{State: int32(p.Read())}, nil
 }
@@ -75,7 +76,7 @@ func (s *server) GetPinPull(ctx context.Context, pin *pb.Pin) (*pb.PinPull, erro
 
 	defer rpio.Close()
 
-	Info.Printf("GetPinPull context(%s) pin(%v)\n", ctx, pin)
+	Info.Printf("TogglePinState context(%s) pin{Number: %d, Direction: %s, State: %s, Pull: %s}\n", ctx, pin.Number, schema.Direction(int32(pin.Direction)), schema.State(int32(pin.State)), schema.Pull(int32(pin.Pull)))
 
 	// This isn't supported by rpio lib yet
 	return &pb.PinPull{Pull: int32(p.GetPinPull())}, nil
@@ -92,7 +93,7 @@ func (s *server) SetPinDirection(ctx context.Context, pin *pb.Pin) (*pb.PinDirec
 	defer rpio.Close()
 	p.Mode(rpio.Direction(uint8(pin.Direction)))
 
-	Info.Printf("SetPinDirection context(%v) pin(%v)\n", ctx, pin)
+	Info.Printf("TogglePinState context(%s) pin{Number: %d, Direction: %s, State: %s, Pull: %s}\n", ctx, pin.Number, schema.Direction(int32(pin.Direction)), schema.State(int32(pin.State)), schema.Pull(int32(pin.Pull)))
 
 	return &pb.PinDirection{Direction: pin.Direction}, nil
 }
@@ -106,7 +107,7 @@ func (s *server) SetPinState(ctx context.Context, pin *pb.Pin) (*pb.PinState, er
 	defer rpio.Close()
 	p.Write(rpio.State(uint8(pin.State)))
 
-	Info.Printf("SetPinState context(%s) pin(%v)\n", ctx, pin)
+	Info.Printf("TogglePinState context(%s) pin{Number: %d, Direction: %s, State: %s, Pull: %s}\n", ctx, pin.Number, schema.Direction(int32(pin.Direction)), schema.State(int32(pin.State)), schema.Pull(int32(pin.Pull)))
 
 	return &pb.PinState{State: int32(p.Read())}, nil
 }
@@ -120,7 +121,7 @@ func (s *server) SetPinPull(ctx context.Context, pin *pb.Pin) (*pb.PinPull, erro
 	defer rpio.Close()
 	p.Write(rpio.State(uint8(pin.State)))
 
-	Info.Printf("SetPinPull context(%s) pin(%v)\n", ctx, pin)
+	Info.Printf("TogglePinState context(%s) pin{Number: %d, Direction: %s, State: %s, Pull: %s}\n", ctx, pin.Number, schema.Direction(int32(pin.Direction)), schema.State(int32(pin.State)), schema.Pull(int32(pin.Pull)))
 
 	return &pb.PinPull{Pull: pin.Pull}, nil
 }
@@ -134,7 +135,7 @@ func (s *server) TogglePinState(ctx context.Context, pin *pb.Pin) (*pb.PinState,
 	defer rpio.Close()
 	p.Toggle()
 
-	Info.Printf("TogglePinState context(%s) pin(%v)\n", ctx, pin)
+	Info.Printf("TogglePinState context(%s) pin{Number: %d, Direction: %s, State: %s, Pull: %s}\n", ctx, pin.Number, schema.Direction(int32(pin.Direction)), schema.State(int32(pin.State)), schema.Pull(int32(pin.Pull)))
 
 	return &pb.PinState{State: int32(p.Read())}, nil
 }
