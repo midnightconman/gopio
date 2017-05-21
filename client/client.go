@@ -33,6 +33,15 @@ func NewTLSClient(server string, cert string, key string) (*grpc.ClientConn, err
 	return conn, nil
 }
 
+func HealthCheck(client pb.GoPIOClient) (*pb.Health, error) {
+	h, err := client.HealthCheck(context.Background(), &pb.Health{Alive: true})
+	if err != nil {
+		return &pb.Health{Alive: false}, fmt.Errorf("Failed Healthcheck: %v\n", err)
+	}
+
+	return h, nil
+}
+
 func PinSet(client pb.GoPIOClient, pin *pb.Pin) (*pb.Pin, error) {
 
 	d, err := client.SetPinDirection(context.Background(), pin)
@@ -47,4 +56,3 @@ func PinSet(client pb.GoPIOClient, pin *pb.Pin) (*pb.Pin, error) {
 
 	return &pb.Pin{Number: pin.Number, Direction: int32(d.Direction), State: int32(s.State)}, nil
 }
-

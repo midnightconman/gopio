@@ -12,6 +12,9 @@ package gopio;
 
 service GoPIO {
 
+  // Is the service up?
+  rpc HealthCheck(Health) returns (Health) {}
+
   // Is the Pin input or output?
   rpc GetPinDirection(Pin) returns (PinDirection) {}
 
@@ -33,6 +36,10 @@ service GoPIO {
 
   // Toggle the Pin between High and Low
   rpc TogglePinState(Pin) returns (PinState) {}
+}
+
+message Health {
+  bool alive = 1;
 }
 
 message Pin {

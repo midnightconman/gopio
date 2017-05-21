@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-    pb "github.com/midnightconman/gopio/pb"
 	"github.com/midnightconman/gopio/client"
+	pb "github.com/midnightconman/gopio/pb"
 	"github.com/midnightconman/gopio/schema"
 	"io"
 	"log"
 	"os"
-    "time"
+	"time"
 )
 
 var (
@@ -40,6 +40,12 @@ func main() {
 	defer conn.Close()
 
 	pbClient := pb.NewGoPIOClient(conn)
+
+	_, err = client.HealthCheck(pbClient)
+	if err != nil {
+		Error.Printf("Failed Healthcheck: %v\n", err)
+		os.Exit(1)
+	}
 
 	p := pb.Pin{Number: 14, Direction: int32(schema.Output), State: int32(schema.Low)}
 	ps, err := client.PinSet(pbClient, &p)

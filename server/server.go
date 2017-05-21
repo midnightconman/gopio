@@ -57,6 +57,11 @@ func SignalHandler() bool {
 	return true
 }
 
+func (s *server) HealthCheck(ctx context.Context, health *pb.Health) (*pb.Health, error) {
+	Info.Printf("HealthCheck context(%v)\n", ctx)
+	return &pb.Health{Alive: true}, nil
+}
+
 func (s *server) GetPinDirection(ctx context.Context, pin *pb.Pin) (*pb.PinDirection, error) {
 	/*p := rpio.Pin(pin.Number)
 	if err := rpio.Open(); err != nil {
