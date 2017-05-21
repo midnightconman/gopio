@@ -66,8 +66,8 @@ func main() {
 
 	c := cron.New()
 
-	p := pb.Pin{Number: 14, Direction: int32(schema.Output), State: int32(schema.Low)}
 	c.AddFunc(os.Getenv("GOPIO_CRON_ON"), func() {
+		p := pb.Pin{Number: 14, Direction: int32(schema.Output), State: int32(schema.Low)}
 		ps, err := client.PinSet(pbClient, &p)
 		if err != nil {
 			Error.Printf("Failed PinOn for pin(%d): %v\n", &p.Number, err)
@@ -75,8 +75,8 @@ func main() {
 		Info.Printf("Pin:(%d) Direction:(%s) State:(%s)\n", p.Number, schema.Direction(uint8(ps.Direction)), schema.State(uint8(ps.State)))
 	})
 
-	p = pb.Pin{Number: 14, Direction: int32(schema.Output), State: int32(schema.High)}
 	c.AddFunc(os.Getenv("GOPIO_CRON_OFF"), func() {
+		p := pb.Pin{Number: 14, Direction: int32(schema.Output), State: int32(schema.High)}
 		ps, err := client.PinSet(pbClient, &p)
 		if err != nil {
 			Error.Printf("Failed PinOn for pin(%d): %v\n", &p.Number, err)
@@ -86,7 +86,7 @@ func main() {
 
 	c.Start()
 
-	//for {
-	//}
+	for {
+	}
 
 }
