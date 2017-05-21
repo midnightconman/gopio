@@ -39,6 +39,24 @@ func LogInit(
 
 type server struct{}
 
+func SignalHandler() bool {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGUSR1, syscall.SIGUSR2, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		for {
+			sig := <-sigs
+			Info.Printf("Signal Received: %v\n", sig)
+			switch sig {
+			case syscall.SIGINT, syscall.SIGTERM:
+				os.Exit(0)
+			}
+		}
+	}()
+
+	return true
+}
+
 func (s *server) GetPinDirection(ctx context.Context, pin *pb.Pin) (*pb.PinDirection, error) {
 	/*p := rpio.Pin(pin.Number)
 	if err := rpio.Open(); err != nil {
@@ -142,20 +160,7 @@ func (s *server) TogglePinState(ctx context.Context, pin *pb.Pin) (*pb.PinState,
 
 func main() {
 	LogInit(os.Stdout, os.Stderr)
-	sigs := make(chan os.Signal, 1)
-
-	signal.Notify(sigs, syscall.SIGUSR1, syscall.SIGUSR2, syscall.SIGINT, syscall.SIGTERM)
-
-	go func() {
-		for {
-			sig := <-sigs
-			Info.Printf("Signal Received: %v\n", sig)
-			switch sig {
-			case syscall.SIGINT, syscall.SIGTERM:
-				os.Exit(0)
-			}
-		}
-	}()
+    SignalHandler()
 
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%s", os.Getenv("GOPIO_HOST"), os.Getenv("GOPIO_PORT")))
 	if err != nil {
