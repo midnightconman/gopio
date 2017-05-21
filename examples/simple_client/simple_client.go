@@ -33,9 +33,6 @@ func main() {
 	LogInit(os.Stdout, os.Stderr)
 	server := fmt.Sprintf("%s:%s", os.Getenv("GOPIO_HOST"), os.Getenv("GOPIO_PORT"))
 
-	//var opts []grpc.DialOption
-
-	//conn, err := client.NewClient(server, opts...)
 	conn, err := client.NewClient(server)
 	if err != nil {
 		Error.Printf("fail to dial: %v", err)
@@ -43,8 +40,6 @@ func main() {
 	defer conn.Close()
 
 	pbClient := pb.NewGoPIOClient(conn)
-
-    //for i := 2; i <= 27; i++ {
 
 	p := pb.Pin{Number: 14, Direction: int32(schema.Output), State: int32(schema.Low)}
 	ps, err := client.PinSet(pbClient, &p)
@@ -61,6 +56,5 @@ func main() {
 		Error.Printf("Failed PinOn for pin(%d): %v\n", &p.Number, err)
 	}
 	Info.Printf("Pin:(%d) Direction:(%s) State:(%s)\n", p.Number, schema.Direction(uint8(ps.Direction)), schema.State(uint8(ps.State)))
-    //}
 
 }

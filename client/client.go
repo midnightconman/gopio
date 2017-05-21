@@ -10,8 +10,6 @@ import (
 
 func NewClient(server string) (*grpc.ClientConn, error) {
 
-	var opts []grpc.DialOption
-
 	conn, err := grpc.Dial(server, grpc.WithInsecure())
 	if err != nil {
 		return nil, fmt.Errorf("fail to dial: %v", err)
