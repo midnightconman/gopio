@@ -41,11 +41,12 @@ func main() {
 
 	pbClient := pb.NewGoPIOClient(conn)
 
-	_, err = client.HealthCheck(pbClient)
+	health, err := client.HealthCheck(pbClient)
 	if err != nil {
 		Error.Printf("Failed Healthcheck: %v\n", err)
 		os.Exit(1)
 	}
+	Info.Printf("Healthcheck{%v}\n", health)
 
 	p := pb.Pin{Number: 14, Direction: int32(schema.Output), State: int32(schema.Low)}
 	ps, err := client.PinSet(pbClient, &p)
