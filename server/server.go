@@ -160,7 +160,7 @@ func (s *server) TogglePinState(ctx context.Context, pin *pb.Pin) (*pb.PinState,
 
 func main() {
 	LogInit(os.Stdout, os.Stderr)
-    SignalHandler()
+	SignalHandler()
 
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%s", os.Getenv("GOPIO_HOST"), os.Getenv("GOPIO_PORT")))
 	if err != nil {
