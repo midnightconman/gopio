@@ -56,7 +56,7 @@ func main() {
 		}
 		Info.Printf("Pin:(%d) Direction:(%s) State:(%s)\n", p.Number, schema.Direction(uint8(ps.Direction)), schema.State(uint8(ps.State)))
 
-		time.Sleep(1e6)
+		time.Sleep(1e8)
 	}
 
 }
