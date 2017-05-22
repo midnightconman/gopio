@@ -52,7 +52,6 @@ func main() {
 
 	i := 1
 	for {
-		i++
 		if i%2 == 0 {
 			state = schema.Low
 		} else {
@@ -65,13 +64,13 @@ func main() {
 		}
 		Info.Printf("Pin:(%d) Direction:(%s) State:(%s)\n", p.Number, schema.Direction(uint8(ps.Direction)), schema.State(uint8(ps.State)))
 
-		if os.Getenv("GOPIO_LOOPS") != "" {
-			i, _ := strconv.Atoi(os.Getenv("GOPIO_LOOPS"))
+		if os.Getenv("GOPIO_DELAY") != "" {
+			i, _ := strconv.Atoi(os.Getenv("GOPIO_DELAY"))
 			time.Sleep(time.Duration(i * int(time.Second)))
 		} else {
 			time.Sleep(10 * time.Second)
 		}
-
+		i++
 	}
 
 }
