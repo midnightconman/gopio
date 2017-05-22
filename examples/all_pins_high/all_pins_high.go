@@ -8,7 +8,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"strconv"
 	"time"
 )
 
@@ -49,27 +48,15 @@ func main() {
 	}
 	Info.Printf("Healthcheck{%v}\n", health)
 
-	for {
-		p := pb.Pin{Number: 14, Direction: int32(schema.Output), State: int32(schema.Low)}
+	for i := 2; i < 28; i++ {
+		p := pb.Pin{Number: int32(i), Direction: int32(schema.Output), State: int32(schema.High)}
 		ps, err := client.PinSet(pbClient, &p)
 		if err != nil {
 			Error.Printf("Failed PinOn for pin(%d): %v\n", &p.Number, err)
 		}
 		Info.Printf("Pin:(%d) Direction:(%s) State:(%s)\n", p.Number, schema.Direction(uint8(ps.Direction)), schema.State(uint8(ps.State)))
 
-		if os.Getenv("GOPIO_LOOPS") != "" {
-			i, _ := strconv.Atoi(os.Getenv("GOPIO_LOOPS"))
-			time.Sleep(time.Duration(i * int(time.Second)))
-		} else {
-			time.Sleep(20 * time.Second)
-		}
-
-		p = pb.Pin{Number: 14, Direction: int32(schema.Output), State: int32(schema.High)}
-		ps, err = client.PinSet(pbClient, &p)
-		if err != nil {
-			Error.Printf("Failed PinOn for pin(%d): %v\n", &p.Number, err)
-		}
-		Info.Printf("Pin:(%d) Direction:(%s) State:(%s)\n", p.Number, schema.Direction(uint8(ps.Direction)), schema.State(uint8(ps.State)))
+		time.Sleep(1e6)
 	}
 
 }
