@@ -50,27 +50,29 @@ func main() {
 	}
 	Info.Printf("Healthcheck{%v}\n", health)
 
-	i := 1
 	for {
-		if i%2 == 0 {
-			state = schema.Low
-		} else {
-			state = schema.High
-		}
-		p := pb.Pin{Number: 14, Direction: int32(schema.Output), State: int32(state)}
-		ps, err := client.PinSet(pbClient, &p)
-		if err != nil {
-			Error.Printf("Failed PinOutputToggle for pin(%d): %v\n", &p.Number, err)
-		}
-		Info.Printf("Pin:(%d) Direction:(%s) State:(%s)\n", p.Number, schema.Direction(uint8(ps.Direction)), schema.State(uint8(ps.State)))
+		for _, num := range []int32{14, 15} {
+			for i := 1; i < 4; i++ {
+				if i%2 == 0 {
+					state = schema.Low
+				} else {
+					state = schema.High
+				}
+				p := pb.Pin{Number: num, Direction: int32(schema.Output), State: int32(state)}
+				ps, err := client.PinSet(pbClient, &p)
+				if err != nil {
+					Error.Printf("Failed PinOutputToggle for pin(%d): %v\n", &p.Number, err)
+				}
+				Info.Printf("Pin:(%d) Direction:(%s) State:(%s)\n", p.Number, schema.Direction(uint8(ps.Direction)), schema.State(uint8(ps.State)))
 
-		if os.Getenv("GOPIO_DELAY") != "" {
-			i, _ := strconv.Atoi(os.Getenv("GOPIO_DELAY"))
-			time.Sleep(time.Duration(i * int(time.Second)))
-		} else {
-			time.Sleep(10 * time.Second)
+				if os.Getenv("GOPIO_DELAY") != "" {
+					i, _ := strconv.Atoi(os.Getenv("GOPIO_DELAY"))
+					time.Sleep(time.Duration(i * int(time.Second)))
+				} else {
+					time.Sleep(10 * time.Second)
+				}
+			}
 		}
-		i++
 	}
 
 }
