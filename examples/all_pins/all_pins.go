@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -29,6 +30,15 @@ func LogInit(
 		log.Ldate|log.Ltime|log.Lshortfile)
 }
 
+func ParseState(state string) schema.State {
+	switch strings.ToLower(state) {
+	case "high":
+		return schema.High
+	default:
+		return schema.Low
+	}
+}
+
 func main() {
 	LogInit(os.Stdout, os.Stderr)
 	server := fmt.Sprintf("%s:%s", os.Getenv("GOPIO_HOST"), os.Getenv("GOPIO_PORT"))
@@ -46,10 +56,13 @@ func main() {
 		Error.Printf("Failed Healthcheck: %v\n", err)
 		os.Exit(1)
 	}
-	Info.Printf("Healthcheck{%v}\n", health)
+	Info.Printf("Healthcheck{ %v}\n", health)
 
 	for i := 2; i < 28; i++ {
-		p := pb.Pin{Number: int32(i), Direction: int32(schema.Output), State: int32(schema.High)}
+		p := pb.Pin{Number: int32(i),
+			Direction: int32(schema.Output),
+			State:     int32(ParseState(os.Getenv("GOPIO_STATE"))),
+		}
 		ps, err := client.PinSet(pbClient, &p)
 		if err != nil {
 			Error.Printf("Failed PinOn for pin(%d): %v\n", &p.Number, err)
