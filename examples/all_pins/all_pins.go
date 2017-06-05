@@ -30,15 +30,6 @@ func LogInit(
 		log.Ldate|log.Ltime|log.Lshortfile)
 }
 
-func ParseState(state string) schema.State {
-	switch strings.ToLower(state) {
-	case "high":
-		return schema.High
-	default:
-		return schema.Low
-	}
-}
-
 func main() {
 	LogInit(os.Stdout, os.Stderr)
 	server := fmt.Sprintf("%s:%s", os.Getenv("GOPIO_HOST"), os.Getenv("GOPIO_PORT"))

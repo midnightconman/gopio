@@ -2,6 +2,7 @@ package schema
 
 import (
 	"fmt"
+    "strings"
 )
 
 type Direction int32
@@ -38,6 +39,15 @@ func (i State) String() string {
 	return _State_name[_State_index[i]:_State_index[i+1]]
 }
 
+func ParseState(state string) schema.State {
+    switch strings.ToLower(state) {
+    case "high":
+        return schema.High
+    default:
+        return schema.Low
+    }
+}
+
 const (
 	PullOff Pull = iota
 	PullDown
@@ -52,4 +62,15 @@ func (i Pull) String() string {
 		return fmt.Sprintf("Pull(%d)", i)
 	}
 	return _Pull_name[_Pull_index[i]:_Pull_index[i+1]]
+}
+
+func ParsePull(pull string) schema.Pull {
+    switch strings.ToLower(pull) {
+    case "pullup":
+        return schema.PullUp
+    case "pulldown":
+        return schema.PullDown
+    default:
+        return schema.PullOff
+    }
 }
