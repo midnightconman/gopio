@@ -8,7 +8,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -51,8 +50,8 @@ func main() {
 
 	for i := 2; i < 28; i++ {
 		p := pb.Pin{Number: int32(i),
-			Direction: int32(schema.Output),
-			State:     int32(ParseState(os.Getenv("GOPIO_STATE"))),
+			Direction: int32(schema.ParseDirection(os.Getenv("GOPIO_DIRECTION"))),
+			State:     int32(schema.ParseState(os.Getenv("GOPIO_STATE"))),
 		}
 		ps, err := client.PinSet(pbClient, &p)
 		if err != nil {
