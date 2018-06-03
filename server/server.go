@@ -4,8 +4,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/grpc-ecosystem/go-grpc-prometheus"
 	pb "github.com/midnightconman/gopio/pb"
 	"github.com/midnightconman/gopio/schema"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/stianeikeland/go-rpio"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -14,6 +16,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -224,5 +227,11 @@ func main() {
 	grpcServer := grpc.NewServer(opts...)
 	pb.RegisterGoPIOServer(grpcServer, &server{})
 	reflection.Register(grpcServer)
+
+	go func() {
+		grpc_prometheus.Register(grpcServer)
+		http.Handle("/metrics", promhttp.Handler())
+	}()
+
 	grpcServer.Serve(lis)
 }

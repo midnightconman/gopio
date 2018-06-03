@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "gopio-server.fullname" . }}
+  labels:
+    app: {{ template "gopio-server.name" . }}
+    chart: {{ template "gopio-server.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: grpc
+      protocol: TCP
+      name: grpc
+  selector:
+    app: {{ template "gopio-server.name" . }}
+    release: {{ .Release.Name }}
