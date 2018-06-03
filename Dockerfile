@@ -4,7 +4,7 @@ ARG VERSION="0.1.0"
 
 ENV APP="gopio"
 ENV APP_DIR="/go/src/github.com/midnightconman/${APP}"
-ENV GOPIO_PORT="8080"
+ENV GOPIO_PORT="8443"
 
 # Copy source directories individually for better cache
 COPY ./vendor ${APP_DIR}/vendor

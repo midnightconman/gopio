@@ -21,12 +21,6 @@
   version = "v1.1.0"
 
 [[projects]]
-  name = "github.com/grpc-ecosystem/go-grpc-prometheus"
-  packages = ["."]
-  revision = "6b7015e65d366bf3f19b2b2a000a831940f0f7e0"
-  version = "v1.1"
-
-[[projects]]
   name = "github.com/matttproud/golang_protobuf_extensions"
   packages = ["pbutil"]
   revision = "c12348ce28de40eed0136aa2b644d0ee0650e56c"
@@ -157,6 +151,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d8bc5e9938f353f8d82d94f3b7c1bd2ce5a148ad559bf26e8a9d38def3bc420f"
+  inputs-digest = "340b04518466fe4812606e76391bdb012331212c14d963075a553c924ff6c25c"
   solver-name = "gps-cdcl"
   solver-version = 1

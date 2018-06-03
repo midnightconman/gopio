@@ -4,7 +4,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/grpc-ecosystem/go-grpc-prometheus"
 	pb "github.com/midnightconman/gopio/pb"
 	"github.com/midnightconman/gopio/schema"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -229,8 +228,8 @@ func main() {
 	reflection.Register(grpcServer)
 
 	go func() {
-		grpc_prometheus.Register(grpcServer)
 		http.Handle("/metrics", promhttp.Handler())
+		log.Fatal(http.ListenAndServe("0.0.0.0:8080", nil))
 	}()
 
 	grpcServer.Serve(lis)
