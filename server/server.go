@@ -39,7 +39,7 @@ func LogInit(
 
 type server struct{}
 
-func SignalHandler() bool {
+func signalHandler() bool {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGUSR1, syscall.SIGUSR2, syscall.SIGINT, syscall.SIGTERM)
 
@@ -201,7 +201,7 @@ func (s *server) TogglePinState(ctx context.Context, pin *pb.Pin) (*pb.PinState,
 
 func main() {
 	LogInit(os.Stdout, os.Stderr)
-	SignalHandler()
+	signalHandler()
 
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%s",
 		os.Getenv("GOPIO_HOST"),
