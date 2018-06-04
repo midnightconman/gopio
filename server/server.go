@@ -4,6 +4,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/grpc-ecosystem/go-grpc-prometheus"
 	pb "github.com/midnightconman/gopio/pb"
 	"github.com/midnightconman/gopio/schema"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -221,11 +222,16 @@ func main() {
 		if err != nil {
 			Error.Printf("failed to generate credentials %v\n", err)
 		}
-		opts = []grpc.ServerOption{grpc.Creds(creds)}
+		opts = []grpc.ServerOption{
+			grpc.Creds(creds),
+			grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
+			grpc.UnaryInterceptor(grpc_prometheus.UnaryServerInterceptor),
+		}
 	}
 	grpcServer := grpc.NewServer(opts...)
 	pb.RegisterGoPIOServer(grpcServer, &server{})
 	reflection.Register(grpcServer)
+	grpc_prometheus.Register(grpcServer)
 
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
