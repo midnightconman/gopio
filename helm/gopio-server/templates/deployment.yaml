@@ -38,6 +38,11 @@ spec:
             httpGet:
               path: /metrics
               port: http
+          volumeMounts:
+          - mountPath: /dev/mem
+            name: dev-mem
+          securityContext:
+            privileged: true
           resources:
 {{ toYaml .Values.resources | indent 12 }}
     {{- with .Values.nodeSelector }}
@@ -52,3 +57,7 @@ spec:
       tolerations:
 {{ toYaml . | indent 8 }}
     {{- end }}
+      volumes:
+      - name: dev-mem
+        hostPath:
+          path: /dev/mem

@@ -4,7 +4,6 @@ ARG VERSION="0.1.0"
 
 ENV APP="gopio"
 ENV APP_DIR="/go/src/github.com/midnightconman/${APP}"
-ENV GOPIO_PORT="8443"
 
 # Copy source directories individually for better cache
 COPY ./vendor ${APP_DIR}/vendor
@@ -21,9 +20,10 @@ RUN set -ex \
       && chmod 0755 /go/bin/linux_arm/server
 
 FROM scratch
+ENV GOPIO_PORT="8443"
 
 COPY --from=build /go/bin/linux_arm/server /
 
-EXPOSE 8080
+EXPOSE 8080 8443
 ENTRYPOINT ["/server"]
 CMD [""]
