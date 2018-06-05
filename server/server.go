@@ -227,6 +227,11 @@ func main() {
 			grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
 			grpc.UnaryInterceptor(grpc_prometheus.UnaryServerInterceptor),
 		}
+	} else {
+		opts = []grpc.ServerOption{
+			grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
+			grpc.UnaryInterceptor(grpc_prometheus.UnaryServerInterceptor),
+		}
 	}
 	grpcServer := grpc.NewServer(opts...)
 	pb.RegisterGoPIOServer(grpcServer, &server{})
