@@ -33,8 +33,8 @@ func NewTLSClient(server string, cert string, key string) (*grpc.ClientConn, err
 	return conn, nil
 }
 
-func HealthCheck(client pb.GoPIOClient) (*pb.Health, error) {
-	h, err := client.HealthCheck(context.Background(), &pb.Health{Alive: true})
+func HealthCheck(ctx context.Context, client pb.GoPIOClient) (*pb.Health, error) {
+	h, err := client.HealthCheck(ctx, &pb.Health{Alive: true})
 	if err != nil {
 		return &pb.Health{Alive: false}, fmt.Errorf("Failed Healthcheck: %v\n", err)
 	}
