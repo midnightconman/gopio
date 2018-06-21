@@ -33,8 +33,8 @@ func NewTLSClient(server string, cert string, key string) (*grpc.ClientConn, err
 	return conn, nil
 }
 
-func HealthCheck(ctx context.Context, client pb.GoPIOClient) (*pb.Health, error) {
-	h, err := client.HealthCheck(ctx, &pb.Health{Alive: true})
+func HealthCheck(client pb.GoPIOClient) (*pb.Health, error) {
+	h, err := client.HealthCheck(context.Background(), &pb.Health{Alive: true})
 	if err != nil {
 		return &pb.Health{Alive: false}, fmt.Errorf("Failed Healthcheck: %v\n", err)
 	}
@@ -42,14 +42,14 @@ func HealthCheck(ctx context.Context, client pb.GoPIOClient) (*pb.Health, error)
 	return h, nil
 }
 
-func PinSet(ctx context.Context, client pb.GoPIOClient, pin *pb.Pin) (*pb.Pin, error) {
+func PinSet(client pb.GoPIOClient, pin *pb.Pin) (*pb.Pin, error) {
 
-	d, err := client.SetPinDirection(ctx, pin)
+	d, err := client.SetPinDirection(context.Background(), pin)
 	if err != nil {
 		return &pb.Pin{Number: 14}, fmt.Errorf("Failed SetPinDirection for pin(%d): %v\n", pin.Number, err)
 	}
 
-	s, err := client.SetPinState(ctx, pin)
+	s, err := client.SetPinState(context.Background(), pin)
 	if err != nil {
 		return &pb.Pin{Number: 14}, fmt.Errorf("Failed SetPinState for pin(%d): %v\n", pin.Number, err)
 	}
